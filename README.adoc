@@ -1,12 +1,25 @@
-= HID Power Device Library for Arduino =
+= HID UPS Power Device Library for Arduino =
 
 This library allows an Arduino board with USB capabilities to act as a HID-compliant Power Device according to USB HID specifications. This library is useful if you want to build a smart UPS or other power device, which can report its state or perform power on/power off operations as necessary for your project.
 
 For more information about USB HID specs please read https://www.usb.org/sites/default/files/pdcv11.pdf
 
+== Supported Arduinos ==
+* Leonardo
+* (Pro)Micro
+
+== Setup & Usage ==
+Setup is very simple. Just clone this repository to Arduino libraries, then upload the sketch UPS.ino 
+from the /examples folder. Once upload is completed successfully you will find HID Device Battery in  
+your system.
+
+== Supported Operating Systems ==
+Mac OSX 10.14.6 Mojave or newer
+
+
 == License ==
 
-Copyright (c) Arduino LLC. All right reserved.
+Copyright (c) Alex Bratchik 2020. All right reserved.
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
