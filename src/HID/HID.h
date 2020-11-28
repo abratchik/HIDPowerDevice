@@ -21,7 +21,8 @@
 
 #include <stdint.h>
 #include <Arduino.h>
-#include "PluggableUSB.h"
+#include <HardwareSerial.h>
+#include <PluggableUSB.h>
 
 #if defined(USBCON)
 
@@ -88,10 +89,21 @@ typedef struct
   EndpointDescriptor  out;                  //added
 } HIDDescriptor;
 
+class HIDReport {
+public:
+    HIDReport *next = NULL;
+    HIDReport(uint8_t i, const void *d, uint8_t l) : id(i), data(d), length(l) {}
+    
+    uint8_t id;
+    const void* data;
+    uint16_t length;
+    bool lock;
+};
+
 class HIDSubDescriptor {
 public:
   HIDSubDescriptor *next = NULL;
-  HIDSubDescriptor(const void *d, const uint16_t l) : data(d), length(l) { }
+  HIDSubDescriptor(const void *d, uint16_t l) : data(d), length(l) { }
 
   const void* data;
   const uint16_t length;
@@ -100,26 +112,40 @@ public:
 class HID_ : public PluggableUSBModule
 {
 public:
-  HID_(void);
-  int begin(void);
-  int SendReport(uint8_t id, const void* data, int len);
-  void AppendDescriptor(HIDSubDescriptor* node);
-
+    HID_(void);
+    int begin(void);
+    int SendReport(uint8_t id, const void* data, int len);
+    int SetFeature(uint8_t id, const void* data, int len);
+    bool LockFeature(uint8_t id, bool lock);
+    
+    void AppendDescriptor(HIDSubDescriptor* node);
+    
+    void setSerial(Serial_& serial) {
+        dbg = &serial;
+    }
+    
 protected:
-  // Implementation of the PluggableUSBModule
-  int getInterface(uint8_t* interfaceCount);
-  int getDescriptor(USBSetup& setup);
-  bool setup(USBSetup& setup);
-  uint8_t getShortName(char* name);
-
+    // Implementation of the PluggableUSBModule
+    int getInterface(uint8_t* interfaceCount);
+    int getDescriptor(USBSetup& setup);
+    bool setup(USBSetup& setup);
+    uint8_t getShortName(char* name);
+    
 private:
-  uint8_t epType[2];
+    uint8_t epType[2];
 
-  HIDSubDescriptor* rootNode;
-  uint16_t descriptorSize;
+    HIDSubDescriptor* rootNode;
+    uint16_t descriptorSize;
 
-  uint8_t protocol;
-  uint8_t idle;
+    uint8_t protocol;
+    uint8_t idle;
+  
+    // Buffer pointers to hold the feature data
+    HIDReport* rootReport;
+    uint16_t reportCount;
+    
+    Serial_ *dbg;
+    
 };
 
 // Replacement for global singleton.

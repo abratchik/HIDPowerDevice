@@ -63,6 +63,16 @@ static const uint8_t _hidReportDescriptor[] PROGMEM = {
     0x81,0x23,                    //     INPUT (Constant, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Bitfield)
     0x09,0x66,                    //     USAGE (RemainingCapacity)
     0xB1,0xA3,                    //     FEATURE (Constant, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Volatile, Bitfield)
+    0x85,HID_PD_RELSTATEOFCHARGE, //     REPORT_ID (25)
+    0x09,0x64,                    //     USAGE (RelativeStateOfCharge)
+    0x81,0x23,                    //     INPUT (Constant, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Bitfield)
+    0x09,0x64,                    //     USAGE (RelativeStateOfCharge)
+    0xB1,0xA3,                    //     FEATURE (Constant, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Volatile, Bitfield)
+    0x85,HID_PD_ABSSTATEOFCHARGE, //     REPORT_ID (25)
+    0x09,0x65,                    //     USAGE (RelativeStateOfCharge)
+    0x81,0x23,                    //     INPUT (Constant, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Bitfield)
+    0x09,0x65,                    //     USAGE (RelativeStateOfCharge)
+    0xB1,0xA3,                    //     FEATURE (Constant, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Volatile, Bitfield)
     0x85,HID_PD_CPCTYGRANULARITY1,//     REPORT_ID (16)
     0x09,0x8D,                    //     USAGE (CapacityGranularity1)
     0xB1,0x22,                    //     FEATURE (Data, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Nonvolatile, Bitfield)
@@ -85,6 +95,9 @@ static const uint8_t _hidReportDescriptor[] PROGMEM = {
     0x85,HID_PD_REMNCAPACITYLIMIT,//     REPORT_ID (17)
     0x09,0x29,                    //     USAGE (RemainingCapacityLimit)
     0xB1,0xA2,                    //     FEATURE (Data, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Volatile, Bitfield)
+    0x85,HID_PD_AVERAGECURRENT,   //     REPORT_ID (27)
+    0x09,0x62,                    //     USAGE (AverageCurrent)
+    0xB1,0xA2,                    //     FEATURE (Data, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Volatile, Bitfield)
     0x85,HID_PD_MANUFACTUREDATE,  //     REPORT_ID (9)
     0x09,0x85,                    //     USAGE (ManufacturerDate)
     0x75,0x10,                    //     REPORT_SIZE (16)
@@ -93,11 +106,22 @@ static const uint8_t _hidReportDescriptor[] PROGMEM = {
     0x85,HID_PD_RUNTIMETOEMPTY,   //     REPORT_ID (13)
     0x09,0x68,                    //     USAGE (RunTimeToEmpty)
     0x27,0xFF,0xFF,0x00,0x00,     //     LOGICAL_MAXIMUM (65534)
-    0x66,0x01,0x10,               //     UNIT (??)
+    0x66,0x01,0x10,               //     UNIT (Seconds)
     0x55,0x00,                    //     UNIT_EXPONENT (0)
     0x81,0xA3,                    //     INPUT (Constant, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Bitfield)
     0x09,0x68,                    //     USAGE (RunTimeToEmpty)
     0xB1,0xA3,                    //     FEATURE (Constant, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Volatile, Bitfield)
+    0x85,HID_PD_AVERAGETIME2FULL, //     REPORT_ID (26)
+    0x09,0x6A,                    //     USAGE (AverageTimeToFull)  
+    0x81,0xA3,                    //     INPUT (Constant, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Bitfield)
+    0x09,0x6A,                    //     USAGE (AverageTimeToFull)
+    0xB1,0xA3,                    //     FEATURE (Constant, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Volatile, Bitfield) 
+    0x05,0x84,                    //     USAGE_PAGE (Power Device)
+    0x85,HID_PD_AVERAGETIME2EMPTY,//     REPORT_ID (28)
+    0x09,0x69,                    //     USAGE (AverageTimeToEmpty)  
+    0x81,0xA3,                    //     INPUT (Constant, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Bitfield)
+    0x09,0x69,                    //     USAGE (AverageTimeToEmpty)
+    0xB1,0xA3,                    //     FEATURE (Constant, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Volatile, Bitfield) 
     0x05,0x84,                    //     USAGE_PAGE (Power Device)
     0x85,HID_PD_DELAYBE4SHUTDOWN, //     REPORT_ID (18)
     0x09,0x57,                    //     USAGE (DelayBeforeShutdown)
@@ -234,33 +258,38 @@ HIDPowerDevice_::HIDPowerDevice_(void)
 
 void HIDPowerDevice_::begin(void)
 {
+    HID().begin();
 }
+
+void HIDPowerDevice_::setSerial(Serial_& serial)
+{
+    HID().setSerial(serial);
+}
+
 
 void HIDPowerDevice_::end(void)
 {
 }
 
-void HIDPowerDevice_::sendDate(uint8_t id, uint16_t year, uint8_t month, uint8_t day)
+int HIDPowerDevice_::sendDate(uint8_t id, uint16_t year, uint8_t month, uint8_t day)
 {
         uint16_t bval = (year - 1980)*512 + month * 32 + day;
-	HID().SendReport(id, &bval, sizeof(bval));
+	return HID().SendReport(id, &bval, sizeof(bval));
 }
 
-void HIDPowerDevice_::sendInt32(uint8_t id, uint32_t bval)
+int HIDPowerDevice_::sendInt16(uint8_t id, uint16_t bval)
 {
-	HID().SendReport(id, &bval, sizeof(bval));
+	return HID().SendReport(id, &bval, sizeof(bval));
 }
 
-void HIDPowerDevice_::sendInt16(uint8_t id, uint16_t bval)
+int HIDPowerDevice_::sendByte(uint8_t id, uint8_t bval)
 {
-	HID().SendReport(id, &bval, sizeof(bval));
+	return HID().SendReport(id, &bval, sizeof(bval));
 }
 
-void HIDPowerDevice_::sendByte(uint8_t id, uint8_t bval)
-{
-	HID().SendReport(id, &bval, sizeof(bval));
+int HIDPowerDevice_::setFeature(uint8_t id, const void *data, int len) {
+    return HID().SetFeature(id, data, len);
 }
-
 
 HIDPowerDevice_ PowerDevice;
 
