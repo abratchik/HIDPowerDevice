@@ -140,7 +140,7 @@ private:
     uint8_t protocol;
     uint8_t idle;
   
-    // Buffer pointers to hold the feature data
+    // Buffer pointer to hold the feature data
     HIDReport* rootReport;
     uint16_t reportCount;
     

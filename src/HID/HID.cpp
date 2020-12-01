@@ -90,8 +90,7 @@ void HID_::AppendDescriptor(HIDSubDescriptor *node)
 int HID_::SetFeature(uint8_t id, const void* data, int len)
 {
     if(!rootReport) {
-        static HIDReport report(id, data, len);
-        rootReport = &report;
+        rootReport = new HIDReport(id, data, len);
     } else {
         HIDReport* current;
         int i=0;
@@ -100,11 +99,12 @@ int HID_::SetFeature(uint8_t id, const void* data, int len)
                 return i;
             }
             // check if we are on the last report
-            if(i+1 == reportCount) 
+            if(!current->next) {
+                current->next = new HIDReport(id, data, len);
                 break;
+            }
         }
-        static HIDReport report(id, data, len);
-        current->next = &report;
+
     }
     
     reportCount++;
@@ -149,17 +149,23 @@ bool HID_::setup(USBSetup& setup)
 
                         if(setup.wValueH == HID_REPORT_TYPE_FEATURE)
                         {
-                        
+//                            dbg->print(setup.wValueL);
                             HIDReport* current;
-                            for(current=rootReport; current; current=current->next) {
-
-                                if(current->id == setup.wValueL) {
+                            int i=0;
+                            for(current=rootReport; current && i<reportCount; current=current->next, i++) {
+//                                dbg->print(":");
+//                                dbg->print(current->id);
+//                                dbg->print(" ");
+//                                dbg->print(current->length);
+//                                dbg->print(" ");
+                                if(setup.wValueL == current->id) {
                                     if(USB_SendControl(0, &(current->id), 1)<0 ||
                                        USB_SendControl(0, current->data, current->length)<0)
-                                        return false;       
-
+                                        return false;   
+                                        
                                     break;
                                 }
+//                                dbg->println("");
                             }
 
                         }    

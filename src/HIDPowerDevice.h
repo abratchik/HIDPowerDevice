@@ -51,7 +51,7 @@
 #define HID_PD_VOLTAGE               0x0B // 11 INPUT (NA) OR FEATURE(implemented)
 #define HID_PD_REMAININGCAPACITY     0x0C // 12 INPUT OR FEATURE(required by Windows)
 #define HID_PD_RUNTIMETOEMPTY        0x0D 
-#define HID_PD_FULLCHRGECAPACITY     0x0E // 14 INPUT OR FEATURE
+#define HID_PD_FULLCHRGECAPACITY     0x0E // 14 INPUT OR FEATURE. Last Full Charge Capacity 
 #define HID_PD_WARNCAPACITYLIMIT     0x0F
 #define HID_PD_CPCTYGRANULARITY1     0x10
 #define HID_PD_REMNCAPACITYLIMIT     0x11
@@ -89,8 +89,7 @@ public:
   void end(void);
   
   int sendDate(uint8_t id, uint16_t year, uint8_t month, uint8_t day);
-  int sendByte(uint8_t id, uint8_t bval);
-  int sendInt16(uint8_t id, uint16_t bval);
+  int sendReport(uint8_t id, const void* bval, int len);
   
   int setFeature(uint8_t id, const void* data, int len);
 
