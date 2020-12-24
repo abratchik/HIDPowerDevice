@@ -92,9 +92,9 @@ typedef struct
 class HIDReport {
 public:
     HIDReport *next = NULL;
-    HIDReport(uint8_t i, const void *d, uint8_t l) : id(i), data(d), length(l) {}
+    HIDReport(uint16_t i, const void *d, uint8_t l) : id(i), data(d), length(l) {}
     
-    uint8_t id;
+    uint16_t id;
     const void* data;
     uint16_t length;
     bool lock;
@@ -114,15 +114,21 @@ class HID_ : public PluggableUSBModule
 public:
     HID_(void);
     int begin(void);
-    int SendReport(uint8_t id, const void* data, int len);
-    int SetFeature(uint8_t id, const void* data, int len);
-    bool LockFeature(uint8_t id, bool lock);
+    int SendReport(uint16_t id, const void* data, int len);
+    int SetFeature(uint16_t id, const void* data, int len);
+    bool LockFeature(uint16_t id, bool lock);
     
     void AppendDescriptor(HIDSubDescriptor* node);
     
-    void setSerial(Serial_& serial) {
-        dbg = &serial;
+    void setOutput(Serial_& out) {
+        dbg = &out;
     }
+    
+    void setSerial(const char* s) {
+        serial = s;
+    }
+    
+    HIDReport* GetFeature(uint16_t id);
     
 protected:
     // Implementation of the PluggableUSBModule
@@ -145,6 +151,8 @@ private:
     uint16_t reportCount;
     
     Serial_ *dbg;
+    
+    const char *serial;
     
 };
 

@@ -62,11 +62,14 @@
 #define HID_PD_CAPACITYMODE          0x16
 #define HID_PD_DESIGNCAPACITY        0x17
 #define HID_PD_CPCTYGRANULARITY2     0x18
-#define HID_PD_RELSTATEOFCHARGE      0x19 // INPUT OR FEATURE
 #define HID_PD_AVERAGETIME2FULL      0x1A
 #define HID_PD_AVERAGECURRENT        0x1B
 #define HID_PD_AVERAGETIME2EMPTY     0x1C
-#define HID_PD_ABSSTATEOFCHARGE      0x1E // INPUT OR FEATURE
+
+#define HID_PD_IDEVICECHEMISTRY      0x1F // Feature
+#define HID_PD_IOEMINFORMATION       0x20 // Feature
+
+#define HID_PD_NOTIFICATION          0x21 // Feature
 
 
 #define PRESENTSTATUS_CHARGING       0x00
@@ -74,24 +77,36 @@
 #define PRESENTSTATUS_ACPRESENT      0x02
 #define PRESENTSTATUS_BATTPRESENT    0x03
 
+#define IDEVICECHEMISTRY             0x04
+#define IOEMVENDOR                   0x05
 
 
 
-class HIDPowerDevice_ 
-{
+class HIDPowerDevice_  {
+    
 private:
-
+    
+    const byte bProduct = IPRODUCT;
+    const byte bManufacturer = IMANUFACTURER;
+    const byte bSerial = ISERIAL;  
+    
 public:
   HIDPowerDevice_(void);
   void begin(void);
-  void setSerial(Serial_& serial);
+  
+  void setOutput(Serial_&);
+  
+  void setSerial(const char*);
+  
   
   void end(void);
   
-  int sendDate(uint8_t id, uint16_t year, uint8_t month, uint8_t day);
-  int sendReport(uint8_t id, const void* bval, int len);
+  int sendDate(uint16_t id, uint16_t year, uint8_t month, uint8_t day);
+  int sendReport(uint16_t id, const void* bval, int len);
   
-  int setFeature(uint8_t id, const void* data, int len);
+  int setFeature(uint16_t id, const void* data, int len);
+  
+  int setStringFeature(uint8_t id, const uint8_t* index, const char* data);
 
 };
 

@@ -37,12 +37,47 @@ int HID_::getInterface(uint8_t* interfaceCount)
 	};
 	return USB_SendControl(0, &hidInterface, sizeof(hidInterface));
 }
+// Send a USB descriptor string. The string is stored in PROGMEM as a
+// plain ASCII string but is sent out as UTF-16 with the correct 2-byte
+// prefix
+static bool USB_SendStringDescriptor(const char* string_P, u8 string_len, uint8_t flags) {
+        
+        u8 c[2] = {(u8)(2 + string_len * 2), 3};
+
+        USB_SendControl(0,&c,2);
+
+        bool pgm = flags & TRANSFER_PGM;
+        for(u8 i = 0; i < string_len; i++) {
+                c[0] = pgm ? pgm_read_byte(&string_P[i]) : string_P[i];
+                c[1] = 0;
+                int r = USB_SendControl(0,&c,2);
+                if(!r) {
+                        return false;
+                }
+        }
+        return true;
+}
 
 int HID_::getDescriptor(USBSetup& setup)
 {
+    
+        u8 t = setup.wValueH;
+        
+        if(USB_STRING_DESCRIPTOR_TYPE == t) {
+            
+            // we place all strings in the 0xFF00-0xFFFE range
+            HIDReport* rep = GetFeature(0xFF00 | setup.wValueL );
+            if(rep) {
+                return USB_SendStringDescriptor((char*)rep->data, strlen_P((char*)rep->data), TRANSFER_PGM);
+            }
+            else {
+                return 0;
+            }
+        }
+        
 	// Check if this is a HID Class Descriptor request
 	if (setup.bmRequestType != REQUEST_DEVICETOHOST_STANDARD_INTERFACE) { return 0; }
-	if (setup.wValueH != HID_REPORT_DESCRIPTOR_TYPE) { return 0; }
+	if (HID_REPORT_DESCRIPTOR_TYPE != t) { return 0; }
 
 	// In a HID Class Descriptor wIndex cointains the interface number
 	if (setup.wIndex != pluggedInterface) { return 0; }
@@ -65,12 +100,23 @@ int HID_::getDescriptor(USBSetup& setup)
 
 uint8_t HID_::getShortName(char *name)
 {
+    if(serial) {
+        for(byte i=0; i<strlen_P(serial); i++) {
+            name[i] = pgm_read_byte_near(serial + i);
+        }
+        return strlen_P(serial);
+    }
+    else {
+        
+        // default serial number
+        
 	name[0] = 'H';
 	name[1] = 'I';
 	name[2] = 'D';
 	name[3] = 'A' + (descriptorSize & 0x0F);
 	name[4] = 'A' + ((descriptorSize >> 4) & 0x0F);
 	return 5;
+    }
 }
 
 void HID_::AppendDescriptor(HIDSubDescriptor *node)
@@ -87,7 +133,7 @@ void HID_::AppendDescriptor(HIDSubDescriptor *node)
 	descriptorSize += node->length;
 }
 
-int HID_::SetFeature(uint8_t id, const void* data, int len)
+int HID_::SetFeature(uint16_t id, const void* data, int len)
 {
     if(!rootReport) {
         rootReport = new HIDReport(id, data, len);
@@ -111,7 +157,7 @@ int HID_::SetFeature(uint8_t id, const void* data, int len)
     return reportCount;
 }
 
-bool HID_::LockFeature(uint8_t id, bool lock) {
+bool HID_::LockFeature(uint16_t id, bool lock) {
     if(rootReport) {
         HIDReport* current;
         for(current = rootReport;current; current=current->next) {
@@ -125,13 +171,25 @@ bool HID_::LockFeature(uint8_t id, bool lock) {
 }
 
 
-int HID_::SendReport(uint8_t id, const void* data, int len)
+int HID_::SendReport(uint16_t id, const void* data, int len)
 {
 	auto ret = USB_Send(HID_TX, &id, 1);
 	if (ret < 0) return ret;
 	auto ret2 = USB_Send(HID_TX | TRANSFER_RELEASE, data, len);
 	if (ret2 < 0) return ret2;
 	return ret + ret2;
+}
+
+HIDReport* HID_::GetFeature(uint16_t id)
+{
+    HIDReport* current;
+    int i=0;
+    for(current=rootReport; current && i<reportCount; current=current->next, i++) {
+        if(id == current->id) {
+            return current;
+        }
+    }
+    return (HIDReport*) NULL;
 }
 
 bool HID_::setup(USBSetup& setup)
@@ -149,25 +207,16 @@ bool HID_::setup(USBSetup& setup)
 
                         if(setup.wValueH == HID_REPORT_TYPE_FEATURE)
                         {
-//                            dbg->print(setup.wValueL);
-                            HIDReport* current;
-                            int i=0;
-                            for(current=rootReport; current && i<reportCount; current=current->next, i++) {
-//                                dbg->print(":");
-//                                dbg->print(current->id);
-//                                dbg->print(" ");
-//                                dbg->print(current->length);
-//                                dbg->print(" ");
-                                if(setup.wValueL == current->id) {
-                                    if(USB_SendControl(0, &(current->id), 1)<0 ||
-                                       USB_SendControl(0, current->data, current->length)<0)
-                                        return false;   
-                                        
-                                    break;
-                                }
-//                                dbg->println("");
+
+                            HIDReport* current = GetFeature(setup.wValueL);
+                            if(current){ 
+                                if(USB_SendControl(0, &(current->id), 1)>0 &&
+                                   USB_SendControl(0, current->data, current->length)>0)
+                                    return true;
                             }
 
+                            return false;
+                            
                         }    
 			return true;
 		}
@@ -193,14 +242,22 @@ bool HID_::setup(USBSetup& setup)
 			return true;
 		}
 		if (request == HID_SET_REPORT)
-		{   
-			//uint8_t reportID = setup.wValueL;
-			//uint16_t length = setup.wLength;
-			//uint8_t data[length];
-			// Make sure to not read more data than USB_EP_SIZE.
-			// You can read multiple times through a loop.
-			// The first byte (may!) contain the reportID on a multreport.
-			//USB_RecvControl(data, length);
+		{
+                        if(setup.wValueH == HID_REPORT_TYPE_FEATURE)
+                        {
+
+                            HIDReport* current = GetFeature(setup.wValueL);
+                            if(!current) return false;                              
+                            if(setup.wLength != current->length + 1) return false;  
+                            uint8_t* data = new uint8_t[setup.wLength];              
+                            USB_RecvControl(data, setup.wLength);                   
+                            if(*data != current->id) return false;                 
+                            memcpy((uint8_t*)current->data, data+1, current->length); 
+                            delete[] data;                                          
+                            return true;
+                            
+                        }
+
 		}
 	}
 
