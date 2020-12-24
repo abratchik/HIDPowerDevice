@@ -42,6 +42,8 @@
 #define HID_PD_IPRODUCT              0x01 // FEATURE ONLY
 #define HID_PD_SERIAL                0x02 // FEATURE ONLY
 #define HID_PD_MANUFACTURER          0x03 // FEATURE ONLY
+#define IDEVICECHEMISTRY             0x04
+#define IOEMVENDOR                   0x05
 
 #define HID_PD_RECHARGEABLE          0x06 // FEATURE ONLY
 #define HID_PD_PRESENTSTATUS         0x07 // INPUT OR FEATURE(required by Windows)
@@ -69,16 +71,24 @@
 #define HID_PD_IDEVICECHEMISTRY      0x1F // Feature
 #define HID_PD_IOEMINFORMATION       0x20 // Feature
 
-#define HID_PD_NOTIFICATION          0x21 // Feature
 
-
+// PresenStatus dynamic flags
 #define PRESENTSTATUS_CHARGING       0x00
 #define PRESENTSTATUS_DISCHARGING    0x01
 #define PRESENTSTATUS_ACPRESENT      0x02
 #define PRESENTSTATUS_BATTPRESENT    0x03
+#define PRESENTSTATUS_BELOWRCL       0x04
+#define PRESENTSTATUS_RTLEXPIRED     0x05
+#define PRESENTSTATUS_NEEDREPLACE    0x06
+#define PRESENTSTATUS_VOLTAGENR      0x07
+#define PRESENTSTATUS_FULLCHARGE     0x08
+#define PRESENTSTATUS_FULLDISCHARGE  0x09
+#define PRESENTSTATUS_SHUTDOWNREQ    0x0A
+#define PRESENTSTATUS_SHUTDOWNIMNT   0x0B
+#define PRESENTSTATUS_COMMLOST       0x0C
+#define PRESENTSTATUS_OVERLOAD       0x0D
 
-#define IDEVICECHEMISTRY             0x04
-#define IOEMVENDOR                   0x05
+
 
 
 

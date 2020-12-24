@@ -37,9 +37,8 @@ int HID_::getInterface(uint8_t* interfaceCount)
 	};
 	return USB_SendControl(0, &hidInterface, sizeof(hidInterface));
 }
-// Send a USB descriptor string. The string is stored in PROGMEM as a
-// plain ASCII string but is sent out as UTF-16 with the correct 2-byte
-// prefix
+
+// Since this function is not exposed in USBCore API, had to replicate here.  
 static bool USB_SendStringDescriptor(const char* string_P, u8 string_len, uint8_t flags) {
         
         u8 c[2] = {(u8)(2 + string_len * 2), 3};
@@ -63,6 +62,7 @@ int HID_::getDescriptor(USBSetup& setup)
     
         u8 t = setup.wValueH;
         
+        // HID-specific strings
         if(USB_STRING_DESCRIPTOR_TYPE == t) {
             
             // we place all strings in the 0xFF00-0xFFFE range

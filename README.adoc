@@ -1,6 +1,8 @@
 = HID UPS Power Device Library for Arduino =
 
-This library allows an Arduino board with USB capabilities to act as a HID-compliant Power Device according to USB HID specifications. This library is useful if you want to build a smart UPS or other power device, which can report its state or perform power on/power off operations as necessary for your project.
+This library allows an Arduino board with USB capabilities to act as a HID-compliant UPS according to USB HID specifications. 
+The library is useful if you want to build a smart UPS or other power device, which can report its state to the PC host
+or perform power on/power off operations as necessary for your project.
 
 For more information about USB HID specs please read https://www.usb.org/sites/default/files/pdcv11.pdf
 
@@ -13,9 +15,15 @@ Setup is very simple. Just clone this repository to Arduino libraries, then uplo
 from the /examples folder. Once upload is completed successfully you will find HID Device Battery in  
 your system.
 
-== Supported Operating Systems ==
-Mac OSX 10.14.6 Mojave or newer
+== Additional setup step on Linux hosts ==
+Copy linux/98-upower-hid.rules file to the /etc/udev/rules.d/ folder , then reboot. This is required for
+Linux device manager (udev) to recognize the Arduino board as UPS. 
 
+
+== Tested on Operating Systems ==
+Mac OSX 10.14.6 Mojave
+Ubuntu 18.04.05 LTS 
+Windows 10
 
 == License ==
 

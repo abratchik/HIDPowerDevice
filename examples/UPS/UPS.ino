@@ -1,82 +1,195 @@
 #include <HIDPowerDevice.h>
 
-void setup() {
-  // put your setup code here, to run once:
-  PowerDevice.begin();
-  pinMode(4, INPUT_PULLUP);
+#define MINUPDATEINTERVAL   26
 
-  Serial.begin(9600);
+int iIntTimer=0;
+
+
+// String constants 
+const char STRING_DEVICECHEMISTRY[] PROGMEM = "PbAc";
+const char STRING_OEMVENDOR[] PROGMEM = "MyCoolUPS";
+const char STRING_SERIAL[] PROGMEM = "UPS10"; 
+
+const byte bDeviceChemistry = IDEVICECHEMISTRY;
+const byte bOEMVendor = IOEMVENDOR;
+
+uint16_t iPresentStatus = 0, iPreviousStatus = 0;
+
+byte bRechargable = 1;
+byte bCapacityMode = 2;  // units are in %%
+
+// Physical parameters
+const uint16_t iConfigVoltage = 1380;
+uint16_t iVoltage =1300, iPrevVoltage = 0;
+uint16_t iRunTimeToEmpty = 0, iPrevRunTimeToEmpty = 0;
+uint16_t iAvgTimeToFull = 7200;
+uint16_t iAvgTimeToEmpty = 7200;
+uint16_t iRemainTimeLimit = 600;
+int16_t  iDelayBe4Reboot = -1;
+int16_t  iDelayBe4ShutDown = -1;
+
+byte iAudibleAlarmCtrl = 2; // 1 - Disabled, 2 - Enabled, 3 - Muted
+
+
+// Parameters for ACPI compliancy
+const byte iDesignCapacity = 100;
+byte iWarnCapacityLimit = 10; // warning at 10% 
+byte iRemnCapacityLimit = 5; // low at 5% 
+const byte bCapacityGranularity1 = 1;
+const byte bCapacityGranularity2 = 1;
+byte iFullChargeCapacity = 100;
+
+byte iRemaining =0, iPrevRemaining=0;
+
+int iRes=0;
+
+
+void setup() {
+
+  Serial.begin(57600);
+    
+  PowerDevice.begin();
   
+  // Serial No is set in a special way as it forms Arduino port name
+  PowerDevice.setSerial(STRING_SERIAL); 
+  
+  // Used for debugging purposes. 
+  PowerDevice.setOutput(Serial);
+  
+  pinMode(4, INPUT_PULLUP); // ground this pin to simulate power failure. 
+  pinMode(5, OUTPUT);  // output flushing 1 sec indicating that the arduino cycle is running. 
+  pinMode(10, OUTPUT); // output is on once commuication is lost with the host, otherwise off.
+
+
+  PowerDevice.setFeature(HID_PD_PRESENTSTATUS, &iPresentStatus, sizeof(iPresentStatus));
+  
+  PowerDevice.setFeature(HID_PD_RUNTIMETOEMPTY, &iRunTimeToEmpty, sizeof(iRunTimeToEmpty));
+  PowerDevice.setFeature(HID_PD_AVERAGETIME2FULL, &iAvgTimeToFull, sizeof(iAvgTimeToFull));
+  PowerDevice.setFeature(HID_PD_AVERAGETIME2EMPTY, &iAvgTimeToEmpty, sizeof(iAvgTimeToEmpty));
+  PowerDevice.setFeature(HID_PD_REMAINTIMELIMIT, &iRemainTimeLimit, sizeof(iRemainTimeLimit));
+  PowerDevice.setFeature(HID_PD_DELAYBE4REBOOT, &iDelayBe4Reboot, sizeof(iDelayBe4Reboot));
+  PowerDevice.setFeature(HID_PD_DELAYBE4SHUTDOWN, &iDelayBe4ShutDown, sizeof(iDelayBe4ShutDown));
+  
+  PowerDevice.setFeature(HID_PD_RECHARGEABLE, &bRechargable, sizeof(bRechargable));
+  PowerDevice.setFeature(HID_PD_CAPACITYMODE, &bCapacityMode, sizeof(bCapacityMode));
+  PowerDevice.setFeature(HID_PD_CONFIGVOLTAGE, &iConfigVoltage, sizeof(iConfigVoltage));
+  PowerDevice.setFeature(HID_PD_VOLTAGE, &iVoltage, sizeof(iVoltage));
+
+  PowerDevice.setStringFeature(HID_PD_IDEVICECHEMISTRY, &bDeviceChemistry, STRING_DEVICECHEMISTRY);
+  PowerDevice.setStringFeature(HID_PD_IOEMINFORMATION, &bOEMVendor, STRING_OEMVENDOR);
+
+  PowerDevice.setFeature(HID_PD_AUDIBLEALARMCTRL, &iAudibleAlarmCtrl, sizeof(iAudibleAlarmCtrl));
+
+  PowerDevice.setFeature(HID_PD_DESIGNCAPACITY, &iDesignCapacity, sizeof(iDesignCapacity));
+  PowerDevice.setFeature(HID_PD_FULLCHRGECAPACITY, &iFullChargeCapacity, sizeof(iFullChargeCapacity));
+  PowerDevice.setFeature(HID_PD_REMAININGCAPACITY, &iRemaining, sizeof(iRemaining));
+  PowerDevice.setFeature(HID_PD_WARNCAPACITYLIMIT, &iWarnCapacityLimit, sizeof(iWarnCapacityLimit));
+  PowerDevice.setFeature(HID_PD_REMNCAPACITYLIMIT, &iRemnCapacityLimit, sizeof(iRemnCapacityLimit));
+  PowerDevice.setFeature(HID_PD_CPCTYGRANULARITY1, &bCapacityGranularity1, sizeof(bCapacityGranularity1));
+  PowerDevice.setFeature(HID_PD_CPCTYGRANULARITY2, &bCapacityGranularity2, sizeof(bCapacityGranularity2));
+
 }
 
 void loop() {
-  //put your main code here, to run repeatedly:
-
-  delay(2000);
   
-  uint8_t raw[USB_EP_SIZE]={0};
-  // Serial.println(USB_Available(HID_RX));
-  if(Serial.available()) {
-    
-    int incomingByte = Serial.read();
-    Serial.println(incomingByte, DEC);
-  }
-    
-  if(USB_Available(HID_RX)) {
-    Serial.print("USB_Available\t"); Serial.println(USB_Available(HID_RX));
-  }
-
-  // return;
   
-  PowerDevice.sendByte(HID_PD_IPRODUCT, IPRODUCT);
-  PowerDevice.sendByte(HID_PD_MANUFACTURER, IMANUFACTURER);
-  PowerDevice.sendByte(HID_PD_SERIAL, ISERIAL);
-  
-  PowerDevice.sendByte(HID_PD_RECHARGEABLE, 1); // should be 1 (Rechargable). Equivalent to "Battery Technology" in ACPI. 
-  PowerDevice.sendByte(HID_PD_CAPACITYMODE, 0);
-  PowerDevice.sendInt32(HID_PD_FULLCHRGECAPACITY, 43200); //12 Ah (in Asec)
-  PowerDevice.sendInt32(HID_PD_DESIGNCAPACITY, 43200); //12 Ah (in Asec)
-  PowerDevice.sendInt16(HID_PD_CONFIGVOLTAGE, 13800); //13.8V
-  PowerDevice.sendInt32(HID_PD_REMNCAPACITYLIMIT, 2160); //5% is set to threshold
-  PowerDevice.sendByte(HID_PD_CPCTYGRANULARITY1, 100);
-  PowerDevice.sendByte(HID_PD_CPCTYGRANULARITY2, 50);
-
-  byte bRemaining = 75;
-  
-  PowerDevice.sendByte(HID_PD_REMAININGCAPACITY, bRemaining);
-
-  int iPresentStatus = 0;
-  
-  // Charging
+  //*********** Measurements Unit ****************************
   bool bCharging = digitalRead(4);
-  if(bCharging) {
-    bitSet(iPresentStatus,0);
-    // Fully Charged
-    if(bRemaining == 100) bitSet(iPresentStatus, 12);
+  bool bACPresent = bCharging;    // TODO - replace with sensor
+  bool bDischarging = !bCharging; // TODO - replace with sensor
+  int iA7 = analogRead(A7);       // TODO - this is for debug only. Replace with charge estimation
 
-  }
-  // Dischargig
-  else {
-    bitSet(iPresentStatus,1);
-    // Fully Discharged
-    if(bRemaining = 1) bitSet(iPresentStatus, 13);
-  }
-
-  // Need Replacement
-  bitSet(iPresentStatus, 9);
-  // Overload
-  bitSet(iPresentStatus, 10);
-
-
-  PowerDevice.sendInt16(HID_PD_PRESENTSTATUS, iPresentStatus);
-  if(bCharging) {
-    PowerDevice.sendInt16(HID_PD_CURRENT, 500);
-  }
-  else {
-    PowerDevice.sendInt16(HID_PD_CURRENT, -500);
-    PowerDevice.sendInt16(HID_PD_RUNTIMETOEMPTY, 3600);
-  }
+  iRemaining = (byte)(round((float)100*iA7/1024));
+  iRunTimeToEmpty = (uint16_t)round((float)iAvgTimeToEmpty*iRemaining/100);
+  
+    // Charging
+  if(bCharging) 
+    bitSet(iPresentStatus,PRESENTSTATUS_CHARGING);
+  else
+    bitClear(iPresentStatus,PRESENTSTATUS_CHARGING);
+  if(bACPresent) 
+    bitSet(iPresentStatus,PRESENTSTATUS_ACPRESENT);
+  else
+    bitClear(iPresentStatus,PRESENTSTATUS_ACPRESENT);
+  if(iRemaining == iFullChargeCapacity) 
+    bitSet(iPresentStatus,PRESENTSTATUS_FULLCHARGE);
+  else 
+    bitClear(iPresentStatus,PRESENTSTATUS_FULLCHARGE);
     
-  PowerDevice.sendInt16(HID_PD_VOLTAGE, 12000);
+  // Discharging
+  if(bDischarging) {
+    bitSet(iPresentStatus,PRESENTSTATUS_DISCHARGING);
+    // if(iRemaining < iRemnCapacityLimit) bitSet(iPresentStatus,PRESENTSTATUS_BELOWRCL);
+    
+    if(iRunTimeToEmpty < iRemainTimeLimit) 
+      bitSet(iPresentStatus, PRESENTSTATUS_RTLEXPIRED);
+    else
+      bitClear(iPresentStatus, PRESENTSTATUS_RTLEXPIRED);
+
+  }
+  else {
+    bitClear(iPresentStatus,PRESENTSTATUS_DISCHARGING);
+    bitClear(iPresentStatus, PRESENTSTATUS_RTLEXPIRED);
+  }
+
+  // Shutdown requested
+  if(iDelayBe4ShutDown > 0 ) {
+      bitSet(iPresentStatus, PRESENTSTATUS_SHUTDOWNREQ);
+      Serial.println("shutdown requested");
+  }
+  else
+    bitClear(iPresentStatus, PRESENTSTATUS_SHUTDOWNREQ);
+
+  // Shutdown imminent
+  if((iPresentStatus & (1 << PRESENTSTATUS_SHUTDOWNREQ)) || 
+     (iPresentStatus & (1 << PRESENTSTATUS_RTLEXPIRED))) {
+    bitSet(iPresentStatus, PRESENTSTATUS_SHUTDOWNIMNT);
+    Serial.println("shutdown imminent");
+  }
+  else
+    bitClear(iPresentStatus, PRESENTSTATUS_SHUTDOWNIMNT);
+
+
+  
+  bitSet(iPresentStatus ,PRESENTSTATUS_BATTPRESENT);
+
+  
+
+  //************ Delay ****************************************  
+  delay(1000);
+  iIntTimer++;
+  digitalWrite(5, HIGH);   // turn the LED on (HIGH is the voltage level);
+  delay(1000);
+  iIntTimer++;
+  digitalWrite(5, LOW);   // turn the LED off;
+
+  //************ Check if we are still online ******************
+
+  
+
+  //************ Bulk send or interrupt ***********************
+
+  if((iPresentStatus != iPreviousStatus) || (iRemaining != iPrevRemaining) || (iRunTimeToEmpty != iPrevRunTimeToEmpty) || (iIntTimer>MINUPDATEINTERVAL) ) {
+
+    PowerDevice.sendReport(HID_PD_REMAININGCAPACITY, &iRemaining, sizeof(iRemaining));
+    if(bDischarging) PowerDevice.sendReport(HID_PD_RUNTIMETOEMPTY, &iRunTimeToEmpty, sizeof(iRunTimeToEmpty));
+    iRes = PowerDevice.sendReport(HID_PD_PRESENTSTATUS, &iPresentStatus, sizeof(iPresentStatus));
+
+    if(iRes <0 ) {
+      digitalWrite(10, HIGH);
+    }
+    else
+      digitalWrite(10, LOW);
+        
+    iIntTimer = 0;
+    iPreviousStatus = iPresentStatus;
+    iPrevRemaining = iRemaining;
+    iPrevRunTimeToEmpty = iRunTimeToEmpty;
+  }
+  
+
+  Serial.println(iRemaining);
+  Serial.println(iRunTimeToEmpty);
+  Serial.println(iRes);
   
 }

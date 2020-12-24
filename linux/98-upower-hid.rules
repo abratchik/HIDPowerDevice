@@ -1,0 +1,3 @@
+ATTRS{idVendor}=="2341", ENV{UPOWER_VENDOR}="Arduino"
+ATTRS{idVendor}=="2341", ATTRS{idProduct}=="8036", ENV{UPOWER_BATTERY_TYPE}="ups"
+
