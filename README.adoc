@@ -21,9 +21,9 @@ Linux device manager (udev) to recognize the Arduino board as UPS.
 
 
 == Tested on Operating Systems ==
-Mac OSX 10.14.6 Mojave
-Ubuntu 18.04.05 LTS 
-Windows 10
+* Mac OSX 10.14.6 Mojave
+* Ubuntu 18.04.05 LTS 
+* Windows 10
 
 == License ==
 
