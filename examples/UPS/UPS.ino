@@ -1,6 +1,10 @@
 #include <HIDPowerDevice.h>
 
 #define MINUPDATEINTERVAL   26
+#define CHGDCHPIN           4
+#define RUNSTATUSPIN        5
+#define COMMLOSTPIN         10
+#define BATTSOCPIN          A7
 
 int iIntTimer=0;
 
@@ -56,9 +60,9 @@ void setup() {
   // Used for debugging purposes. 
   PowerDevice.setOutput(Serial);
   
-  pinMode(4, INPUT_PULLUP); // ground this pin to simulate power failure. 
-  pinMode(5, OUTPUT);  // output flushing 1 sec indicating that the arduino cycle is running. 
-  pinMode(10, OUTPUT); // output is on once commuication is lost with the host, otherwise off.
+  pinMode(CHGDCHPIN, INPUT_PULLUP); // ground this pin to simulate power failure. 
+  pinMode(RUNSTATUSPIN, OUTPUT);  // output flushing 1 sec indicating that the arduino cycle is running. 
+  pinMode(COMMLOSTPIN, OUTPUT); // output is on once communication is lost with the host, otherwise off.
 
 
   PowerDevice.setFeature(HID_PD_PRESENTSTATUS, &iPresentStatus, sizeof(iPresentStatus));
@@ -94,12 +98,12 @@ void loop() {
   
   
   //*********** Measurements Unit ****************************
-  bool bCharging = digitalRead(4);
+  bool bCharging = digitalRead(CHGDCHPIN);
   bool bACPresent = bCharging;    // TODO - replace with sensor
   bool bDischarging = !bCharging; // TODO - replace with sensor
-  int iA7 = analogRead(A7);       // TODO - this is for debug only. Replace with charge estimation
+  int iBattSoc = analogRead(BATTSOCPIN);       // TODO - this is for debug only. Replace with charge estimation
 
-  iRemaining = (byte)(round((float)100*iA7/1024));
+  iRemaining = (byte)(round((float)100*iBattSoc/1024));
   iRunTimeToEmpty = (uint16_t)round((float)iAvgTimeToEmpty*iRemaining/100);
   
     // Charging
@@ -158,10 +162,10 @@ void loop() {
   //************ Delay ****************************************  
   delay(1000);
   iIntTimer++;
-  digitalWrite(5, HIGH);   // turn the LED on (HIGH is the voltage level);
+  digitalWrite(RUNSTATUSPIN, HIGH);   // turn the LED on (HIGH is the voltage level);
   delay(1000);
   iIntTimer++;
-  digitalWrite(5, LOW);   // turn the LED off;
+  digitalWrite(RUNSTATUSPIN, LOW);   // turn the LED off;
 
   //************ Check if we are still online ******************
 
@@ -176,10 +180,10 @@ void loop() {
     iRes = PowerDevice.sendReport(HID_PD_PRESENTSTATUS, &iPresentStatus, sizeof(iPresentStatus));
 
     if(iRes <0 ) {
-      digitalWrite(10, HIGH);
+      digitalWrite(COMMLOSTPIN, HIGH);
     }
     else
-      digitalWrite(10, LOW);
+      digitalWrite(COMMLOSTPIN, LOW);
         
     iIntTimer = 0;
     iPreviousStatus = iPresentStatus;
