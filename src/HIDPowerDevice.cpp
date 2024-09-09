@@ -235,8 +235,9 @@ void HIDPowerDevice_::begin(void) {
     
     HID().SetFeature(HID_PD_IPRODUCT, &bProduct, sizeof(bProduct));
     HID().SetFeature(HID_PD_SERIAL, &bSerial, sizeof(bSerial));
-    HID().SetFeature(HID_PD_MANUFACTURER, &bManufacturer, sizeof(bManufacturer));
     
+    const byte bManufacturer = IMANUFACTURER; // defined in Arduino <USBDesc.h>
+    HID().SetFeature(HID_PD_MANUFACTURER, &bManufacturer, sizeof(bManufacturer));
 }
 
 void HIDPowerDevice_::setOutput(Serial_& out) {
