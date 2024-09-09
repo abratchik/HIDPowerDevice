@@ -145,7 +145,7 @@ private:
     uint16_t descriptorSize = 0;
 
     uint8_t protocol;
-    uint8_t idle;
+    uint8_t idle = 1;
   
     // Buffer pointer to hold the feature data
     HIDReport* rootReport = nullptr;
