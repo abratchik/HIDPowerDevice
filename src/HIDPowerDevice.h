@@ -95,8 +95,6 @@
 class HIDPowerDevice_  {
     
 private:
-    
-    const byte bProduct = IPRODUCT;
     const byte bSerial = ISERIAL;  
     
 public:
