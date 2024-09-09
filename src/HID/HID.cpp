@@ -265,8 +265,7 @@ bool HID_::setup(USBSetup& setup)
 	return false;
 }
 
-HID_::HID_(void) : PluggableUSBModule(2, 1, epType),
-                   protocol(HID_REPORT_PROTOCOL)
+HID_::HID_(void) : PluggableUSBModule(2, 1, epType)
 {
 	epType[0] = EP_TYPE_INTERRUPT_IN;
         epType[1] = EP_TYPE_INTERRUPT_OUT;
