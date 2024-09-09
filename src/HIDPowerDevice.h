@@ -112,7 +112,6 @@ private:
     
 public:
   HIDPowerDevice_(void);
-  void begin(void);
   
   void setOutput(Serial_&);
   
