@@ -39,9 +39,9 @@ int HID_::getInterface(uint8_t* interfaceCount)
     return USB_SendControl(0, &hidInterface, sizeof(hidInterface));
 }
 
-// Since this function is not exposed in USBCore API, had to replicate here.  
+// Since this function is not exposed in USBCore API, had to replicate here.
 static bool USB_SendStringDescriptor(const char* string_P, u8 string_len, uint8_t flags) {
-        
+
         u8 c[2] = {(u8)(2 + string_len * 2), 3};
 
         USB_SendControl(0,&c,2);
@@ -60,12 +60,12 @@ static bool USB_SendStringDescriptor(const char* string_P, u8 string_len, uint8_
 
 int HID_::getDescriptor(USBSetup& setup)
 {
-    
+
         u8 t = setup.wValueH;
-        
+
         // HID-specific strings
         if(USB_STRING_DESCRIPTOR_TYPE == t) {
-            
+
             // we place all strings in the 0xFF00-0xFFFE range
             HIDReport* rep = GetFeature(0xFF00 | setup.wValueL );
             if(rep) {
@@ -75,7 +75,7 @@ int HID_::getDescriptor(USBSetup& setup)
                 return 0;
             }
         }
-        
+
     // Check if this is a HID Class Descriptor request
     if (setup.bmRequestType != REQUEST_DEVICETOHOST_STANDARD_INTERFACE) { return 0; }
     if (HID_REPORT_DESCRIPTOR_TYPE != t) { return 0; }
@@ -91,11 +91,11 @@ int HID_::getDescriptor(USBSetup& setup)
             return -1;
         total += res;
     }
-    
+
     // Reset the protocol on reenumeration. Normally the host should not assume the state of the protocol
     // due to the USB specs, but Windows and Linux just assumes its in report mode.
     protocol = HID_REPORT_PROTOCOL;
-    
+
     return total;
 }
 
@@ -108,9 +108,9 @@ uint8_t HID_::getShortName(char *name)
         return strlen_P(serial);
     }
     else {
-        
+
         // default serial number
-        
+
     name[0] = 'H';
     name[1] = 'I';
     name[2] = 'D';
@@ -153,7 +153,7 @@ int HID_::SetFeature(uint16_t id, const void* data, int len)
         }
 
     }
-    
+
     reportCount++;
     return reportCount;
 }
@@ -194,31 +194,31 @@ HIDReport* HID_::GetFeature(uint16_t id)
 }
 
 bool HID_::setup(USBSetup& setup)
-{       
+{
     if (pluggedInterface != setup.wIndex) {
         return false;
     }
 
     uint8_t request = setup.bRequest;
     uint8_t requestType = setup.bmRequestType;
-        
+
     if (requestType == REQUEST_DEVICETOHOST_CLASS_INTERFACE)
-    {        
+    {
         if (request == HID_GET_REPORT) {
 
                         if(setup.wValueH == HID_REPORT_TYPE_FEATURE)
                         {
 
                             HIDReport* current = GetFeature(setup.wValueL);
-                            if(current){ 
+                            if(current){
                                 if(USB_SendControl(0, &(current->id), 1)>0 &&
                                    USB_SendControl(0, current->data, current->length)>0)
                                     return true;
                             }
 
                             return false;
-                            
-                        }    
+
+                        }
             return true;
         }
         if (request == HID_GET_PROTOCOL) {
@@ -231,7 +231,7 @@ bool HID_::setup(USBSetup& setup)
     }
 
     if (requestType == REQUEST_HOSTTODEVICE_CLASS_INTERFACE)
-    {       
+    {
         if (request == HID_SET_PROTOCOL) {
             // The USB Host tells us if we are in boot or report mode.
             // This only works with a real boot compatible device.
@@ -248,15 +248,15 @@ bool HID_::setup(USBSetup& setup)
                         {
 
                             HIDReport* current = GetFeature(setup.wValueL);
-                            if(!current) return false;                              
-                            if(setup.wLength != current->length + 1) return false;  
-                            uint8_t* data = new uint8_t[setup.wLength];              
-                            USB_RecvControl(data, setup.wLength);                   
-                            if(*data != current->id) return false;                 
-                            memcpy((uint8_t*)current->data, data+1, current->length); 
-                            delete[] data;                                          
+                            if(!current) return false;
+                            if(setup.wLength != current->length + 1) return false;
+                            uint8_t* data = new uint8_t[setup.wLength];
+                            USB_RecvControl(data, setup.wLength);
+                            if(*data != current->id) return false;
+                            memcpy((uint8_t*)current->data, data+1, current->length);
+                            delete[] data;
                             return true;
-                            
+
                         }
 
         }
