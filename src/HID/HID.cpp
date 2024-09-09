@@ -263,9 +263,4 @@ HID_::HID_(void) : PluggableUSBModule(2, 1, epType),
     PluggableUSB().plug(this);
 }
 
-int HID_::begin(void)
-{
-    return 0;
-}
-
 #endif /* if defined(USBCON) */
