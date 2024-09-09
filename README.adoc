@@ -15,7 +15,7 @@ Setup is very simple. Just clone this repository to Arduino libraries, then uplo
 from the /examples folder. Once upload is completed successfully you will find HID Device Battery in  
 your system.
 
-You migth need to change `bCapacityMode` from `2` (%) to `1` (mWh) if you want Windows to report battery capacity percentage on laptops that already has a battery installed (see #11).
+You migth need to change `bCapacityMode` from `2` (%) to `1` (mWh) if you want Windows to report battery capacity percentage on laptops that already has a battery installed (see [#11](../../issues/11) ).
 
 == Additional setup step on Linux hosts ==
 Copy linux/98-upower-hid.rules file to the /etc/udev/rules.d/ folder , then reboot. This is required for
