@@ -142,7 +142,7 @@ private:
     uint8_t epType[2];
 
     HIDSubDescriptor* rootNode = nullptr;
-    uint16_t descriptorSize;
+    uint16_t descriptorSize = 0;
 
     uint8_t protocol;
     uint8_t idle;
