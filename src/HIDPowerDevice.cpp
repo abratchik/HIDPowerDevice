@@ -225,15 +225,11 @@ HIDPowerDevice_::HIDPowerDevice_(void) {
     static HIDSubDescriptor node(_hidReportDescriptor, sizeof (_hidReportDescriptor));
 
     HID().AppendDescriptor(&node);
-}
 
-void HIDPowerDevice_::begin(void) {
     // set string ID here
-    
     HID().SetFeature(HID_PD_IPRODUCT, &bProduct, sizeof(bProduct));
     HID().SetFeature(HID_PD_SERIAL, &bSerial, sizeof(bSerial));
     HID().SetFeature(HID_PD_MANUFACTURER, &bManufacturer, sizeof(bManufacturer));
-    
 }
 
 void HIDPowerDevice_::setOutput(Serial_& out) {
