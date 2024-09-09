@@ -141,20 +141,19 @@ protected:
 private:
     uint8_t epType[2];
 
-    HIDSubDescriptor* rootNode;
+    HIDSubDescriptor* rootNode = nullptr;
     uint16_t descriptorSize;
 
     uint8_t protocol;
     uint8_t idle;
   
     // Buffer pointer to hold the feature data
-    HIDReport* rootReport;
+    HIDReport* rootReport = nullptr;
     uint16_t reportCount;
     
-    Serial_ *dbg;
+    Serial_ *dbg = nullptr;
     
-    const char *serial;
-    
+    const char *serial = nullptr; 
 };
 
 // Replacement for global singleton.
