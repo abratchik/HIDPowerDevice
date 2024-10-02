@@ -106,29 +106,17 @@ void loop() {
   iRemaining = (byte)(round((float)100*iBattSoc/1024));
   iRunTimeToEmpty = (uint16_t)round((float)iAvgTimeToEmpty*iRemaining/100);
   
-    // Charging
-  if(bCharging) 
-    iPresentStatus.CHARGING = 1;
-  else
-    iPresentStatus.CHARGING = 0;
-  if(bACPresent) 
-    iPresentStatus.ACPRESENT = 1;
-  else
-    iPresentStatus.ACPRESENT = 0;
-  if(iRemaining == iFullChargeCapacity) 
-    iPresentStatus.FULLCHARGE = 1;
-  else 
-    iPresentStatus.FULLCHARGE = 0;
+  // Charging
+  iPresentStatus.CHARGING = bCharging;
+  iPresentStatus.ACPRESENT = bACPresent;
+  iPresentStatus.FULLCHARGE = (iRemaining == iFullChargeCapacity);
     
   // Discharging
   if(bDischarging) {
     iPresentStatus.DISCHARGING = 1;
     // if(iRemaining < iRemnCapacityLimit) iPresentStatus.BELOWRCL = 1;
     
-    if(iRunTimeToEmpty < iRemainTimeLimit) 
-      iPresentStatus.RTLEXPIRED = 1;
-    else
-      iPresentStatus.RTLEXPIRED = 0;
+    iPresentStatus.RTLEXPIRED = (iRunTimeToEmpty < iRemainTimeLimit);
 
   }
   else {
