@@ -72,21 +72,31 @@
 #define HID_PD_IOEMINFORMATION       0x20 // Feature
 
 
-// PresenStatus dynamic flags
-#define PRESENTSTATUS_CHARGING       0x00
-#define PRESENTSTATUS_DISCHARGING    0x01
-#define PRESENTSTATUS_ACPRESENT      0x02
-#define PRESENTSTATUS_BATTPRESENT    0x03
-#define PRESENTSTATUS_BELOWRCL       0x04
-#define PRESENTSTATUS_RTLEXPIRED     0x05
-#define PRESENTSTATUS_NEEDREPLACE    0x06
-#define PRESENTSTATUS_VOLTAGENR      0x07
-#define PRESENTSTATUS_FULLCHARGE     0x08
-#define PRESENTSTATUS_FULLDISCHARGE  0x09
-#define PRESENTSTATUS_SHUTDOWNREQ    0x0A
-#define PRESENTSTATUS_SHUTDOWNIMNT   0x0B
-#define PRESENTSTATUS_COMMLOST       0x0C
-#define PRESENTSTATUS_OVERLOAD       0x0D
+// PresentStatus dynamic flags
+struct PresentStatus {
+  uint8_t CHARGING : 1;     // bit 0x00
+  uint8_t DISCHARGING : 1;  // bit 0x01
+  uint8_t ACPRESENT : 1;    // bit 0x02
+  uint8_t BATTPRESENT : 1;  // bit 0x03
+  uint8_t BELOWRCL : 1;     // bit 0x04
+  uint8_t RTLEXPIRED : 1;   // bit 0x05
+  uint8_t NEEDREPLACE : 1;  // bit 0x06
+  uint8_t VOLTAGENR : 1;    // bit 0x07
+  
+  uint8_t FULLCHARGE : 1;   // bit 0x08
+  uint8_t FULLDISCHARGE : 1;// bit 0x09
+  uint8_t SHUTDOWNREQ : 1;  // bit 0x0A
+  uint8_t SHUTDOWNIMNT : 1; // bit 0x0B
+  uint8_t COMMLOST : 1;     // bit 0x0C
+  uint8_t OVERLOAD : 1;     // bit 0x0D
+  uint8_t unused1 : 1;
+  uint8_t unused2 : 1;
+  
+  operator uint16_t () {
+      return *(uint16_t*)(this); // switch to std::bit_cast after migrating to C++20
+  }
+};
+static_assert(sizeof(PresentStatus) == sizeof(uint16_t));
 
 
 
