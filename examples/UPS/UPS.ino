@@ -51,8 +51,6 @@ int iRes=0;
 void setup() {
 
   Serial.begin(57600);
-    
-  PowerDevice.begin();
   
   // Serial No is set in a special way as it forms Arduino port name
   PowerDevice.setSerial(STRING_SERIAL); 
