@@ -17,7 +17,7 @@ const char STRING_SERIAL[] PROGMEM = "UPS10";
 const byte bDeviceChemistry = IDEVICECHEMISTRY;
 const byte bOEMVendor = IOEMVENDOR;
 
-uint16_t iPresentStatus = 0, iPreviousStatus = 0;
+PresentStatus iPresentStatus = {}, iPreviousStatus = {};
 
 byte bRechargable = 1;
 byte bCapacityMode = 2;  // units are in %%
@@ -109,56 +109,44 @@ void loop() {
   iRemaining = (byte)(round((float)100*iBattSoc/1024));
   iRunTimeToEmpty = (uint16_t)round((float)iAvgTimeToEmpty*iRemaining/100);
   
-    // Charging
-  if(bCharging) 
-    bitSet(iPresentStatus,PRESENTSTATUS_CHARGING);
-  else
-    bitClear(iPresentStatus,PRESENTSTATUS_CHARGING);
-  if(bACPresent) 
-    bitSet(iPresentStatus,PRESENTSTATUS_ACPRESENT);
-  else
-    bitClear(iPresentStatus,PRESENTSTATUS_ACPRESENT);
-  if(iRemaining == iFullChargeCapacity) 
-    bitSet(iPresentStatus,PRESENTSTATUS_FULLCHARGE);
-  else 
-    bitClear(iPresentStatus,PRESENTSTATUS_FULLCHARGE);
+  // Charging
+  iPresentStatus.CHARGING = bCharging;
+  iPresentStatus.ACPRESENT = bACPresent;
+  iPresentStatus.FULLCHARGE = (iRemaining == iFullChargeCapacity);
     
   // Discharging
   if(bDischarging) {
-    bitSet(iPresentStatus,PRESENTSTATUS_DISCHARGING);
-    // if(iRemaining < iRemnCapacityLimit) bitSet(iPresentStatus,PRESENTSTATUS_BELOWRCL);
+    iPresentStatus.DISCHARGING = 1;
+    // if(iRemaining < iRemnCapacityLimit) iPresentStatus.BELOWRCL = 1;
     
-    if(iRunTimeToEmpty < iRemainTimeLimit) 
-      bitSet(iPresentStatus, PRESENTSTATUS_RTLEXPIRED);
-    else
-      bitClear(iPresentStatus, PRESENTSTATUS_RTLEXPIRED);
+    iPresentStatus.RTLEXPIRED = (iRunTimeToEmpty < iRemainTimeLimit);
 
   }
   else {
-    bitClear(iPresentStatus,PRESENTSTATUS_DISCHARGING);
-    bitClear(iPresentStatus, PRESENTSTATUS_RTLEXPIRED);
+    iPresentStatus.DISCHARGING = 0;
+    iPresentStatus.RTLEXPIRED = 0;
   }
 
   // Shutdown requested
   if(iDelayBe4ShutDown > 0 ) {
-      bitSet(iPresentStatus, PRESENTSTATUS_SHUTDOWNREQ);
+      iPresentStatus.SHUTDOWNREQ = 1;
       Serial.println("shutdown requested");
   }
   else
-    bitClear(iPresentStatus, PRESENTSTATUS_SHUTDOWNREQ);
+    iPresentStatus.SHUTDOWNREQ = 0;
 
   // Shutdown imminent
-  if((iPresentStatus & (1 << PRESENTSTATUS_SHUTDOWNREQ)) || 
-     (iPresentStatus & (1 << PRESENTSTATUS_RTLEXPIRED))) {
-    bitSet(iPresentStatus, PRESENTSTATUS_SHUTDOWNIMNT);
+  if((iPresentStatus.SHUTDOWNREQ) || 
+     (iPresentStatus.RTLEXPIRED)) {
+    iPresentStatus.SHUTDOWNIMNT = 1;
     Serial.println("shutdown imminent");
   }
   else
-    bitClear(iPresentStatus, PRESENTSTATUS_SHUTDOWNIMNT);
+    iPresentStatus.SHUTDOWNIMNT = 0;
 
 
   
-  bitSet(iPresentStatus ,PRESENTSTATUS_BATTPRESENT);
+  iPresentStatus.BATTPRESENT = 1;
 
   
 
