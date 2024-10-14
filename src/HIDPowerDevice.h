@@ -74,21 +74,21 @@
 
 // PresentStatus dynamic flags
 struct PresentStatus {
-  uint8_t CHARGING : 1;     // bit 0x00
-  uint8_t DISCHARGING : 1;  // bit 0x01
-  uint8_t ACPRESENT : 1;    // bit 0x02
-  uint8_t BATTPRESENT : 1;  // bit 0x03
-  uint8_t BELOWRCL : 1;     // bit 0x04
-  uint8_t RTLEXPIRED : 1;   // bit 0x05
-  uint8_t NEEDREPLACE : 1;  // bit 0x06
-  uint8_t VOLTAGENR : 1;    // bit 0x07
+  uint8_t Charging : 1;                   // bit 0x00
+  uint8_t Discharging : 1;                // bit 0x01
+  uint8_t ACPresent : 1;                  // bit 0x02
+  uint8_t BatteryPresent : 1;             // bit 0x03
+  uint8_t BelowRemainingCapacityLimit : 1;// bit 0x04
+  uint8_t RemainingTimeLimitExpired : 1;  // bit 0x05
+  uint8_t NeedReplacement : 1;            // bit 0x06
+  uint8_t VoltageNotRegulated : 1;        // bit 0x07
   
-  uint8_t FULLCHARGE : 1;   // bit 0x08
-  uint8_t FULLDISCHARGE : 1;// bit 0x09
-  uint8_t SHUTDOWNREQ : 1;  // bit 0x0A
-  uint8_t SHUTDOWNIMNT : 1; // bit 0x0B
-  uint8_t COMMLOST : 1;     // bit 0x0C
-  uint8_t OVERLOAD : 1;     // bit 0x0D
+  uint8_t FullyCharged : 1;               // bit 0x08
+  uint8_t FullyDischarged : 1;            // bit 0x09
+  uint8_t ShutdownRequested : 1;          // bit 0x0A
+  uint8_t ShutdownImminent : 1;           // bit 0x0B
+  uint8_t CommunicationLost : 1;          // bit 0x0C
+  uint8_t Overload : 1;                   // bit 0x0D
   uint8_t unused1 : 1;
   uint8_t unused2 : 1;
   
