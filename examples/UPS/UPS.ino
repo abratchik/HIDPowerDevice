@@ -110,43 +110,43 @@ void loop() {
   iRunTimeToEmpty = (uint16_t)round((float)iAvgTimeToEmpty*iRemaining/100);
   
   // Charging
-  iPresentStatus.CHARGING = bCharging;
-  iPresentStatus.ACPRESENT = bACPresent;
-  iPresentStatus.FULLCHARGE = (iRemaining == iFullChargeCapacity);
+  iPresentStatus.Charging = bCharging;
+  iPresentStatus.ACPresent = bACPresent;
+  iPresentStatus.FullyCharged = (iRemaining == iFullChargeCapacity);
     
   // Discharging
   if(bDischarging) {
-    iPresentStatus.DISCHARGING = 1;
-    // if(iRemaining < iRemnCapacityLimit) iPresentStatus.BELOWRCL = 1;
+    iPresentStatus.Discharging = 1;
+    // if(iRemaining < iRemnCapacityLimit) iPresentStatus.BelowRemainingCapacityLimit = 1;
     
-    iPresentStatus.RTLEXPIRED = (iRunTimeToEmpty < iRemainTimeLimit);
+    iPresentStatus.RemainingTimeLimitExpired = (iRunTimeToEmpty < iRemainTimeLimit);
 
   }
   else {
-    iPresentStatus.DISCHARGING = 0;
-    iPresentStatus.RTLEXPIRED = 0;
+    iPresentStatus.Discharging = 0;
+    iPresentStatus.RemainingTimeLimitExpired = 0;
   }
 
   // Shutdown requested
   if(iDelayBe4ShutDown > 0 ) {
-      iPresentStatus.SHUTDOWNREQ = 1;
+      iPresentStatus.ShutdownRequested = 1;
       Serial.println("shutdown requested");
   }
   else
-    iPresentStatus.SHUTDOWNREQ = 0;
+    iPresentStatus.ShutdownRequested = 0;
 
   // Shutdown imminent
-  if((iPresentStatus.SHUTDOWNREQ) || 
-     (iPresentStatus.RTLEXPIRED)) {
-    iPresentStatus.SHUTDOWNIMNT = 1;
+  if((iPresentStatus.ShutdownRequested) || 
+     (iPresentStatus.RemainingTimeLimitExpired)) {
+    iPresentStatus.ShutdownImminent = 1;
     Serial.println("shutdown imminent");
   }
   else
-    iPresentStatus.SHUTDOWNIMNT = 0;
+    iPresentStatus.ShutdownImminent = 0;
 
 
   
-  iPresentStatus.BATTPRESENT = 1;
+  iPresentStatus.BatteryPresent = 1;
 
   
 
