@@ -88,9 +88,9 @@ struct PresentStatus {
   uint8_t SHUTDOWNREQ : 1;  // bit 0x0A
   uint8_t SHUTDOWNIMNT : 1; // bit 0x0B
   uint8_t COMMLOST : 1;     // bit 0x0C
-  uint8_t OVERLOAD : 1;     // bit 0x0D
   uint8_t unused1 : 1;
   uint8_t unused2 : 1;
+  uint8_t unused3 : 1;
   
   operator uint16_t () {
       return *(uint16_t*)(this); // switch to std::bit_cast after migrating to C++20
