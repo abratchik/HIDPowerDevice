@@ -128,6 +128,8 @@ public:
   
   int setStringFeature(uint8_t id, const uint8_t* index, const char* data);
 
+private:
+  uint16_t iManufacturerDate = 0;
 };
 
 extern HIDPowerDevice_ PowerDevice;
