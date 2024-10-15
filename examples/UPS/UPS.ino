@@ -104,11 +104,11 @@ void loop() {
   bool bCharging = digitalRead(CHGDCHPIN);
   bool bACPresent = bCharging;    // TODO - replace with sensor
   bool bDischarging = !bCharging; // TODO - replace with sensor
-  int iBattSoc = analogRead(BATTSOCPIN);       // TODO - this is for debug only. Replace with charge estimation
+  int iBattSoc = analogRead(BATTSOCPIN); // potensiometer value in [0,1024)
 
-  iRemaining = (byte)(round((float)100*iBattSoc/1024));
-  iRunTimeToEmpty = (uint16_t)round((float)iAvgTimeToEmpty*iRemaining/100);
-  
+  iRemaining = (byte)(round((float)iFullChargeCapacity*iBattSoc/1024));
+  iRunTimeToEmpty = (uint16_t)round((float)iAvgTimeToEmpty*iRemaining/iFullChargeCapacity);
+
   // Charging
   iPresentStatus.Charging = bCharging;
   iPresentStatus.ACPresent = bACPresent;
