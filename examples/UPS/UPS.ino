@@ -106,9 +106,9 @@ void loop() {
   bool bDischarging = !bCharging; // TODO - replace with sensor
   int iBattSoc = analogRead(BATTSOCPIN);       // TODO - this is for debug only. Replace with charge estimation
 
-  iRemaining = (byte)(round((float)100*iBattSoc/1024));
-  iRunTimeToEmpty = (uint16_t)round((float)iAvgTimeToEmpty*iRemaining/100);
-  
+  iRemaining = (byte)(round((float)iFullChargeCapacity*iBattSoc/1024));
+  iRunTimeToEmpty = (uint16_t)round((float)iAvgTimeToEmpty*iRemaining/iFullChargeCapacity);
+
   // Charging
   iPresentStatus.Charging = bCharging;
   iPresentStatus.ACPresent = bACPresent;
