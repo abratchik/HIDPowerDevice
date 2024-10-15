@@ -91,7 +91,7 @@ void setup() {
   PowerDevice.setFeature(HID_PD_CPCTYGRANULARITY1, &bCapacityGranularity1, sizeof(bCapacityGranularity1));
   PowerDevice.setFeature(HID_PD_CPCTYGRANULARITY2, &bCapacityGranularity2, sizeof(bCapacityGranularity2));
 
-  PowerDevice.sendDate(HID_PD_MANUFACTUREDATE, 2024, 10, 12);
+  PowerDevice.sendManufacturerDate(2024, 10, 12);
 }
 
 void loop() {
