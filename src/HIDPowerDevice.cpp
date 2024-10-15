@@ -249,11 +249,6 @@ void HIDPowerDevice_::setSerial(const char* s) {
 void HIDPowerDevice_::end(void) {
 }
 
-int HIDPowerDevice_::sendDate(uint16_t id, uint16_t year, uint8_t month, uint8_t day) {
-    uint16_t bval = (year - 1980)*512 + month * 32 + day;
-    return HID().SendReport(id, &bval, sizeof (bval));
-}
-
 int HIDPowerDevice_::sendReport(uint16_t id, const void* bval, int len) {
     return HID().SendReport(id, bval, len);
 }
