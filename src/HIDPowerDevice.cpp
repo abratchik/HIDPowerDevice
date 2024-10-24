@@ -213,13 +213,12 @@ static const uint8_t _hidReportDescriptor[] PROGMEM = {
     0x81, 0xA3, //       INPUT (Constant, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Bitfield)
     0x09, 0x65, //       USAGE (Overload)
     0xB1, 0xA3, //       FEATURE (Constant, Variable, Absolute, No Wrap, Linear, No Preferred, No Null Position, Volatile, Bitfield)
-    0x95, 0x02, //       REPORT_COUNT (2)
+    0x95, 0x02, //       REPORT_COUNT (2) // padding bits to make the report byte aligned
     0x81, 0x01, //       INPUT (Constant, Array, Absolute)
-    0xB1, 0x01, //       FEATURE (Constant, Array, Absolute, No Wrap, Linear, Preferred State, No Null Position, Nonvolatile, Bitfield)      
-    0xC0,       //     END_COLLECTION    
+    0xB1, 0x01, //       FEATURE (Constant, Array, Absolute, No Wrap, Linear, Preferred State, No Null Position, Nonvolatile, Bitfield)
+    0xC0,       //     END_COLLECTION
     0xC0,       //   END_COLLECTION
-    0xC0        // END_COLLECTION                         
-
+    0xC0        // END_COLLECTION
 };
 
 HIDPowerDevice_::HIDPowerDevice_(void) {
