@@ -249,9 +249,9 @@ void HIDPowerDevice_::setSerial(const char* s) {
 void HIDPowerDevice_::end(void) {
 }
 
-int HIDPowerDevice_::sendDate(uint16_t id, uint16_t year, uint8_t month, uint8_t day) {
-    uint16_t bval = (year - 1980)*512 + month * 32 + day;
-    return HID().SendReport(id, &bval, sizeof (bval));
+int HIDPowerDevice_::sendManufacturerDate(uint16_t year, uint8_t month, uint8_t day) {
+    iManufacturerDate = (year - 1980)*512 + month * 32 + day; // from 4.2.6 Battery Settings in "Universal Serial Bus Usage Tables for HID Power Devices"
+    return HID().SetFeature(HID_PD_MANUFACTUREDATE, &iManufacturerDate, sizeof(iManufacturerDate));
 }
 
 int HIDPowerDevice_::sendReport(uint16_t id, const void* bval, int len) {

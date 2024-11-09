@@ -121,13 +121,15 @@ public:
   
   void end(void);
   
-  int sendDate(uint16_t id, uint16_t year, uint8_t month, uint8_t day);
+  int sendManufacturerDate(uint16_t year, uint8_t month, uint8_t day);
   int sendReport(uint16_t id, const void* bval, int len);
   
   int setFeature(uint16_t id, const void* data, int len);
   
   int setStringFeature(uint8_t id, const uint8_t* index, const char* data);
 
+private:
+  uint16_t iManufacturerDate = 0;
 };
 
 extern HIDPowerDevice_ PowerDevice;
