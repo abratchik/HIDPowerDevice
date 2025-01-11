@@ -87,7 +87,6 @@ typedef struct
   InterfaceDescriptor hid;
   HIDDescDescriptor   desc;
   EndpointDescriptor  in;
-  EndpointDescriptor  out;                  //added
 } HIDDescriptor;
 
 class HIDReport {
@@ -139,7 +138,7 @@ protected:
     uint8_t getShortName(char* name) override;
     
 private:
-    uint8_t epType[2];
+    uint8_t epType[1];
 
     HIDSubDescriptor* rootNode;
     uint16_t descriptorSize;
