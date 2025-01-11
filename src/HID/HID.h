@@ -157,11 +157,6 @@ private:
     
 };
 
-// Replacement for global singleton.
-// This function prevents static-initialization-order-fiasco
-// https://isocpp.org/wiki/faq/ctors#static-init-order-on-first-use
-HID_& HID();
-
 #define D_HIDREPORT(length) { 9, 0x21, 0x01, 0x01, 0x21, 1, 0x22, lowByte(length), highByte(length) }
 
 #endif // USBCON
