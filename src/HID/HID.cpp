@@ -33,7 +33,7 @@ int HID_::getInterface(uint8_t* interfaceCount)
     HIDDescriptor hidInterface = {
         D_INTERFACE(pluggedInterface, 1, USB_DEVICE_CLASS_HUMAN_INTERFACE, HID_SUBCLASS_NONE, HID_PROTOCOL_NONE),
         D_HIDREPORT(descriptorSize),
-        D_ENDPOINT(USB_ENDPOINT_IN(HID_TX), USB_ENDPOINT_TYPE_INTERRUPT, USB_EP_SIZE, 0x14)
+        D_ENDPOINT(USB_ENDPOINT_IN(pluggedEndpoint), USB_ENDPOINT_TYPE_INTERRUPT, USB_EP_SIZE, 0x14)
     };
     return USB_SendControl(0, &hidInterface, sizeof(hidInterface));
 }
@@ -167,9 +167,9 @@ bool HID_::LockFeature(uint16_t id, bool lock) {
 
 int HID_::SendReport(uint16_t id, const void* data, int len)
 {
-    auto ret = USB_Send(HID_TX, &id, 1);
+    auto ret = USB_Send(pluggedEndpoint, &id, 1);
     if (ret < 0) return ret;
-    auto ret2 = USB_Send(HID_TX | TRANSFER_RELEASE, data, len);
+    auto ret2 = USB_Send(pluggedEndpoint | TRANSFER_RELEASE, data, len);
     if (ret2 < 0) return ret2;
     return ret + ret2;
 }

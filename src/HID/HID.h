@@ -61,14 +61,6 @@
 #define HID_REPORT_TYPE_OUTPUT  2
 #define HID_REPORT_TYPE_FEATURE 3
 
-#define HID_INTERFACE		(CDC_ACM_INTERFACE + CDC_INTERFACE_COUNT)		// HID Interface
-#define HID_FIRST_ENDPOINT	(CDC_FIRST_ENDPOINT + CDC_ENPOINT_COUNT)
-#define HID_ENDPOINT_INT	(HID_FIRST_ENDPOINT)
-#define HID_ENDPOINT_OUT	(HID_FIRST_ENDPOINT+1)   
-
-#define HID_TX HID_ENDPOINT_INT
-#define HID_RX HID_ENDPOINT_OUT     //++ EP  HID_RX for ease of use with USB_Available & USB_Rec
-
 typedef struct
 {
   uint8_t len;      // 9
