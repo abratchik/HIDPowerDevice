@@ -121,8 +121,10 @@ public:
   int setStringFeature(uint8_t id, const uint8_t* index, const char* data);
 };
 
-extern HIDPowerDevice_ PowerDevice;
+// as many batteries as supported by the HW
+#define BATTERY_COUNT (USB_ENDPOINTS - CDC_FIRST_ENDPOINT - CDC_ENPOINT_COUNT) // 3 by default; 6 if defining CDC_DISABLED
 
+extern HIDPowerDevice_ PowerDevice[BATTERY_COUNT];
 
 #endif
 #endif
