@@ -20,7 +20,7 @@ const byte bOEMVendor = IOEMVENDOR;
 PresentStatus iPresentStatus = {}, iPreviousStatus = {};
 
 byte bRechargable = 1;
-byte bCapacityMode = 2;  // units are in %%
+byte bCapacityMode = 1;  // units are in mWh
 
 // Physical parameters
 const uint16_t iConfigVoltage = 1380;
@@ -43,76 +43,74 @@ const byte bCapacityGranularity1 = 1;
 const byte bCapacityGranularity2 = 1;
 byte iFullChargeCapacity = 100;
 
-byte iRemaining =0, iPrevRemaining=0;
+byte iRemaining[BATTERY_COUNT] = {48, 50, 51, 49, 50, 52}, iPrevRemaining=0;
 
 int iRes=0;
 
 
 void setup() {
-
-  Serial.begin(57600);
-    
-  PowerDevice.begin();
+   
+  for (int i = 0; i < BATTERY_COUNT; i++) {
+    PowerDevice[i].begin();
   
-  // Serial No is set in a special way as it forms Arduino port name
-  PowerDevice.setSerial(STRING_SERIAL); 
-  
-  // Used for debugging purposes. 
-  PowerDevice.setOutput(Serial);
+    // Serial No is set in a special way as it forms Arduino port name
+    PowerDevice[i].setSerial(STRING_SERIAL); 
+  }
   
   pinMode(CHGDCHPIN, INPUT_PULLUP); // ground this pin to simulate power failure. 
   pinMode(RUNSTATUSPIN, OUTPUT);  // output flushing 1 sec indicating that the arduino cycle is running. 
   pinMode(COMMLOSTPIN, OUTPUT); // output is on once communication is lost with the host, otherwise off.
 
-
-  PowerDevice.setFeature(HID_PD_PRESENTSTATUS, &iPresentStatus, sizeof(iPresentStatus));
+ for (int i = 0; i < BATTERY_COUNT; i++) {
+  PowerDevice[i].SetFeature(HID_PD_PRESENTSTATUS, &iPresentStatus, sizeof(iPresentStatus));
   
-  PowerDevice.setFeature(HID_PD_RUNTIMETOEMPTY, &iRunTimeToEmpty, sizeof(iRunTimeToEmpty));
-  PowerDevice.setFeature(HID_PD_AVERAGETIME2FULL, &iAvgTimeToFull, sizeof(iAvgTimeToFull));
-  PowerDevice.setFeature(HID_PD_AVERAGETIME2EMPTY, &iAvgTimeToEmpty, sizeof(iAvgTimeToEmpty));
-  PowerDevice.setFeature(HID_PD_REMAINTIMELIMIT, &iRemainTimeLimit, sizeof(iRemainTimeLimit));
-  PowerDevice.setFeature(HID_PD_DELAYBE4REBOOT, &iDelayBe4Reboot, sizeof(iDelayBe4Reboot));
-  PowerDevice.setFeature(HID_PD_DELAYBE4SHUTDOWN, &iDelayBe4ShutDown, sizeof(iDelayBe4ShutDown));
+  PowerDevice[i].SetFeature(HID_PD_RUNTIMETOEMPTY, &iRunTimeToEmpty, sizeof(iRunTimeToEmpty));
+  PowerDevice[i].SetFeature(HID_PD_AVERAGETIME2FULL, &iAvgTimeToFull, sizeof(iAvgTimeToFull));
+  PowerDevice[i].SetFeature(HID_PD_AVERAGETIME2EMPTY, &iAvgTimeToEmpty, sizeof(iAvgTimeToEmpty));
+  PowerDevice[i].SetFeature(HID_PD_REMAINTIMELIMIT, &iRemainTimeLimit, sizeof(iRemainTimeLimit));
+  PowerDevice[i].SetFeature(HID_PD_DELAYBE4REBOOT, &iDelayBe4Reboot, sizeof(iDelayBe4Reboot));
+  PowerDevice[i].SetFeature(HID_PD_DELAYBE4SHUTDOWN, &iDelayBe4ShutDown, sizeof(iDelayBe4ShutDown));
   
-  PowerDevice.setFeature(HID_PD_RECHARGEABLE, &bRechargable, sizeof(bRechargable));
-  PowerDevice.setFeature(HID_PD_CAPACITYMODE, &bCapacityMode, sizeof(bCapacityMode));
-  PowerDevice.setFeature(HID_PD_CONFIGVOLTAGE, &iConfigVoltage, sizeof(iConfigVoltage));
-  PowerDevice.setFeature(HID_PD_VOLTAGE, &iVoltage, sizeof(iVoltage));
+  PowerDevice[i].SetFeature(HID_PD_RECHARGEABLE, &bRechargable, sizeof(bRechargable));
+  PowerDevice[i].SetFeature(HID_PD_CAPACITYMODE, &bCapacityMode, sizeof(bCapacityMode));
+  PowerDevice[i].SetFeature(HID_PD_CONFIGVOLTAGE, &iConfigVoltage, sizeof(iConfigVoltage));
+  PowerDevice[i].SetFeature(HID_PD_VOLTAGE, &iVoltage, sizeof(iVoltage));
 
-  PowerDevice.setStringFeature(HID_PD_IDEVICECHEMISTRY, &bDeviceChemistry, STRING_DEVICECHEMISTRY);
-  PowerDevice.setStringFeature(HID_PD_IOEMINFORMATION, &bOEMVendor, STRING_OEMVENDOR);
+  PowerDevice[i].setStringFeature(HID_PD_IDEVICECHEMISTRY, &bDeviceChemistry, STRING_DEVICECHEMISTRY);
+  PowerDevice[i].setStringFeature(HID_PD_IOEMINFORMATION, &bOEMVendor, STRING_OEMVENDOR);
 
-  PowerDevice.setFeature(HID_PD_AUDIBLEALARMCTRL, &iAudibleAlarmCtrl, sizeof(iAudibleAlarmCtrl));
+  PowerDevice[i].SetFeature(HID_PD_AUDIBLEALARMCTRL, &iAudibleAlarmCtrl, sizeof(iAudibleAlarmCtrl));
 
-  PowerDevice.setFeature(HID_PD_DESIGNCAPACITY, &iDesignCapacity, sizeof(iDesignCapacity));
-  PowerDevice.setFeature(HID_PD_FULLCHRGECAPACITY, &iFullChargeCapacity, sizeof(iFullChargeCapacity));
-  PowerDevice.setFeature(HID_PD_REMAININGCAPACITY, &iRemaining, sizeof(iRemaining));
-  PowerDevice.setFeature(HID_PD_WARNCAPACITYLIMIT, &iWarnCapacityLimit, sizeof(iWarnCapacityLimit));
-  PowerDevice.setFeature(HID_PD_REMNCAPACITYLIMIT, &iRemnCapacityLimit, sizeof(iRemnCapacityLimit));
-  PowerDevice.setFeature(HID_PD_CPCTYGRANULARITY1, &bCapacityGranularity1, sizeof(bCapacityGranularity1));
-  PowerDevice.setFeature(HID_PD_CPCTYGRANULARITY2, &bCapacityGranularity2, sizeof(bCapacityGranularity2));
+  PowerDevice[i].SetFeature(HID_PD_DESIGNCAPACITY, &iDesignCapacity, sizeof(iDesignCapacity));
+  PowerDevice[i].SetFeature(HID_PD_FULLCHRGECAPACITY, &iFullChargeCapacity, sizeof(iFullChargeCapacity));
+  PowerDevice[i].SetFeature(HID_PD_REMAININGCAPACITY, &iRemaining[i], sizeof(iRemaining[i]));
+  PowerDevice[i].SetFeature(HID_PD_WARNCAPACITYLIMIT, &iWarnCapacityLimit, sizeof(iWarnCapacityLimit));
+  PowerDevice[i].SetFeature(HID_PD_REMNCAPACITYLIMIT, &iRemnCapacityLimit, sizeof(iRemnCapacityLimit));
+  PowerDevice[i].SetFeature(HID_PD_CPCTYGRANULARITY1, &bCapacityGranularity1, sizeof(bCapacityGranularity1));
+  PowerDevice[i].SetFeature(HID_PD_CPCTYGRANULARITY2, &bCapacityGranularity2, sizeof(bCapacityGranularity2));
 
   uint16_t year = 2024, month = 10, day = 12;
   iManufacturerDate = (year - 1980)*512 + month*32 + day; // from 4.2.6 Battery Settings in "Universal Serial Bus Usage Tables for HID Power Devices"
-  PowerDevice.setFeature(HID_PD_MANUFACTUREDATE, &iManufacturerDate, sizeof(iManufacturerDate));
+  PowerDevice[i].SetFeature(HID_PD_MANUFACTUREDATE, &iManufacturerDate, sizeof(iManufacturerDate));
+ }
 }
 
 void loop() {
   
   
   //*********** Measurements Unit ****************************
-  bool bCharging = digitalRead(CHGDCHPIN);
+  bool bCharging = false; digitalRead(CHGDCHPIN);
   bool bACPresent = bCharging;    // TODO - replace with sensor
   bool bDischarging = !bCharging; // TODO - replace with sensor
-  int iBattSoc = analogRead(BATTSOCPIN);       // TODO - this is for debug only. Replace with charge estimation
+  int iBattSoc = 400; //analogRead(BATTSOCPIN);       // TODO - this is for debug only. Replace with charge estimation
 
-  iRemaining = (byte)(round((float)iFullChargeCapacity*iBattSoc/1024));
-  iRunTimeToEmpty = (uint16_t)round((float)iAvgTimeToEmpty*iRemaining/iFullChargeCapacity);
+  //iRemaining = (byte)(round((float)iFullChargeCapacity*iBattSoc/1024));
+  iRunTimeToEmpty = (uint16_t)round((float)iAvgTimeToEmpty*iRemaining[0]/iFullChargeCapacity);
 
   // Charging
   iPresentStatus.Charging = bCharging;
   iPresentStatus.ACPresent = bACPresent;
-  iPresentStatus.FullyCharged = (iRemaining == iFullChargeCapacity);
+  iPresentStatus.FullyCharged = (iRemaining[0] == iFullChargeCapacity);
     
   // Discharging
   if(bDischarging) {
@@ -130,7 +128,6 @@ void loop() {
   // Shutdown requested
   if(iDelayBe4ShutDown > 0 ) {
       iPresentStatus.ShutdownRequested = 1;
-      Serial.println("shutdown requested");
   }
   else
     iPresentStatus.ShutdownRequested = 0;
@@ -139,7 +136,6 @@ void loop() {
   if((iPresentStatus.ShutdownRequested) || 
      (iPresentStatus.RemainingTimeLimitExpired)) {
     iPresentStatus.ShutdownImminent = 1;
-    Serial.println("shutdown imminent");
   }
   else
     iPresentStatus.ShutdownImminent = 0;
@@ -164,11 +160,13 @@ void loop() {
 
   //************ Bulk send or interrupt ***********************
 
-  if((iPresentStatus != iPreviousStatus) || (iRemaining != iPrevRemaining) || (iRunTimeToEmpty != iPrevRunTimeToEmpty) || (iIntTimer>MINUPDATEINTERVAL) ) {
+  if((iPresentStatus != iPreviousStatus) || (iRemaining[0] != iPrevRemaining) || (iRunTimeToEmpty != iPrevRunTimeToEmpty) || (iIntTimer>MINUPDATEINTERVAL) ) {
 
-    PowerDevice.sendReport(HID_PD_REMAININGCAPACITY, &iRemaining, sizeof(iRemaining));
-    if(bDischarging) PowerDevice.sendReport(HID_PD_RUNTIMETOEMPTY, &iRunTimeToEmpty, sizeof(iRunTimeToEmpty));
-    iRes = PowerDevice.sendReport(HID_PD_PRESENTSTATUS, &iPresentStatus, sizeof(iPresentStatus));
+    for (int i = 0; i < BATTERY_COUNT; i++) {
+      PowerDevice[i].SendReport(HID_PD_REMAININGCAPACITY, &iRemaining[0], sizeof(iRemaining[0]));
+      if(bDischarging) PowerDevice[i].SendReport(HID_PD_RUNTIMETOEMPTY, &iRunTimeToEmpty, sizeof(iRunTimeToEmpty));
+      iRes = PowerDevice[i].SendReport(HID_PD_PRESENTSTATUS, &iPresentStatus, sizeof(iPresentStatus));
+    }
 
     if(iRes <0 ) {
       digitalWrite(COMMLOSTPIN, HIGH);
@@ -178,13 +176,8 @@ void loop() {
         
     iIntTimer = 0;
     iPreviousStatus = iPresentStatus;
-    iPrevRemaining = iRemaining;
+    iPrevRemaining = iRemaining[0];
     iPrevRunTimeToEmpty = iRunTimeToEmpty;
   }
-  
-
-  Serial.println(iRemaining);
-  Serial.println(iRunTimeToEmpty);
-  Serial.println(iRes);
   
 }

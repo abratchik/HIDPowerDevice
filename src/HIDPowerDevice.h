@@ -102,7 +102,7 @@ static_assert(sizeof(PresentStatus) == sizeof(uint16_t));
 
 
 
-class HIDPowerDevice_  {
+class HIDPowerDevice_ : public HID_ {
     
 private:
     
@@ -114,24 +114,17 @@ public:
   HIDPowerDevice_(void);
   void begin(void);
   
-  void setOutput(Serial_&);
-  
-  void setSerial(const char*);
-  
-  
   void end(void);
   
   int sendDate(uint16_t id, uint16_t year, uint8_t month, uint8_t day);
-  int sendReport(uint16_t id, const void* bval, int len);
-  
-  int setFeature(uint16_t id, const void* data, int len);
   
   int setStringFeature(uint8_t id, const uint8_t* index, const char* data);
-
 };
 
-extern HIDPowerDevice_ PowerDevice;
+// as many batteries as supported by the HW
+#define BATTERY_COUNT (USB_ENDPOINTS - CDC_FIRST_ENDPOINT - CDC_ENPOINT_COUNT) // 3 by default; 6 if defining CDC_DISABLED
 
+extern HIDPowerDevice_ PowerDevice[BATTERY_COUNT];
 
 #endif
 #endif
