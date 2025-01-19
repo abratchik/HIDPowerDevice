@@ -20,7 +20,7 @@ const byte bOEMVendor = IOEMVENDOR;
 PresentStatus iPresentStatus = {}, iPreviousStatus = {};
 
 byte bRechargable = 1;
-byte bCapacityMode = 2;  // units are in %%
+byte bCapacityMode = 1;  // units are in mWh
 
 // Physical parameters
 const uint16_t iConfigVoltage = 1380;
@@ -43,7 +43,7 @@ const byte bCapacityGranularity1 = 1;
 const byte bCapacityGranularity2 = 1;
 byte iFullChargeCapacity = 100;
 
-byte iRemaining =0, iPrevRemaining=0;
+byte iRemaining[BATTERY_COUNT] = {48, 50, 51, 49, 50, 52}, iPrevRemaining=0;
 
 int iRes=0;
 
@@ -88,7 +88,7 @@ void setup() {
 
   PowerDevice[i].SetFeature(HID_PD_DESIGNCAPACITY, &iDesignCapacity, sizeof(iDesignCapacity));
   PowerDevice[i].SetFeature(HID_PD_FULLCHRGECAPACITY, &iFullChargeCapacity, sizeof(iFullChargeCapacity));
-  PowerDevice[i].SetFeature(HID_PD_REMAININGCAPACITY, &iRemaining, sizeof(iRemaining));
+  PowerDevice[i].SetFeature(HID_PD_REMAININGCAPACITY, &iRemaining[i], sizeof(iRemaining[i]));
   PowerDevice[i].SetFeature(HID_PD_WARNCAPACITYLIMIT, &iWarnCapacityLimit, sizeof(iWarnCapacityLimit));
   PowerDevice[i].SetFeature(HID_PD_REMNCAPACITYLIMIT, &iRemnCapacityLimit, sizeof(iRemnCapacityLimit));
   PowerDevice[i].SetFeature(HID_PD_CPCTYGRANULARITY1, &bCapacityGranularity1, sizeof(bCapacityGranularity1));
@@ -104,18 +104,18 @@ void loop() {
   
   
   //*********** Measurements Unit ****************************
-  bool bCharging = digitalRead(CHGDCHPIN);
+  bool bCharging = false; digitalRead(CHGDCHPIN);
   bool bACPresent = bCharging;    // TODO - replace with sensor
   bool bDischarging = !bCharging; // TODO - replace with sensor
-  int iBattSoc = analogRead(BATTSOCPIN);       // TODO - this is for debug only. Replace with charge estimation
+  int iBattSoc = 400; //analogRead(BATTSOCPIN);       // TODO - this is for debug only. Replace with charge estimation
 
-  iRemaining = (byte)(round((float)iFullChargeCapacity*iBattSoc/1024));
-  iRunTimeToEmpty = (uint16_t)round((float)iAvgTimeToEmpty*iRemaining/iFullChargeCapacity);
+  //iRemaining = (byte)(round((float)iFullChargeCapacity*iBattSoc/1024));
+  iRunTimeToEmpty = (uint16_t)round((float)iAvgTimeToEmpty*iRemaining[0]/iFullChargeCapacity);
 
   // Charging
   iPresentStatus.Charging = bCharging;
   iPresentStatus.ACPresent = bACPresent;
-  iPresentStatus.FullyCharged = (iRemaining == iFullChargeCapacity);
+  iPresentStatus.FullyCharged = (iRemaining[0] == iFullChargeCapacity);
     
   // Discharging
   if(bDischarging) {
@@ -167,10 +167,10 @@ void loop() {
 
   //************ Bulk send or interrupt ***********************
 
-  if((iPresentStatus != iPreviousStatus) || (iRemaining != iPrevRemaining) || (iRunTimeToEmpty != iPrevRunTimeToEmpty) || (iIntTimer>MINUPDATEINTERVAL) ) {
+  if((iPresentStatus != iPreviousStatus) || (iRemaining[0] != iPrevRemaining) || (iRunTimeToEmpty != iPrevRunTimeToEmpty) || (iIntTimer>MINUPDATEINTERVAL) ) {
 
     for (int i = 0; i < BATTERY_COUNT; i++) {
-      PowerDevice[i].SendReport(HID_PD_REMAININGCAPACITY, &iRemaining, sizeof(iRemaining));
+      PowerDevice[i].SendReport(HID_PD_REMAININGCAPACITY, &iRemaining[0], sizeof(iRemaining[0]));
       if(bDischarging) PowerDevice[i].SendReport(HID_PD_RUNTIMETOEMPTY, &iRunTimeToEmpty, sizeof(iRunTimeToEmpty));
       iRes = PowerDevice[i].SendReport(HID_PD_PRESENTSTATUS, &iPresentStatus, sizeof(iPresentStatus));
     }
@@ -183,7 +183,7 @@ void loop() {
         
     iIntTimer = 0;
     iPreviousStatus = iPresentStatus;
-    iPrevRemaining = iRemaining;
+    iPrevRemaining = iRemaining[0];
     iPrevRunTimeToEmpty = iRunTimeToEmpty;
   }
   
