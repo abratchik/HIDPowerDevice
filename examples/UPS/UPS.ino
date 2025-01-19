@@ -31,7 +31,6 @@ uint16_t iAvgTimeToEmpty = 7200;
 uint16_t iRemainTimeLimit = 600;
 int16_t  iDelayBe4Reboot = -1;
 int16_t  iDelayBe4ShutDown = -1;
-uint16_t iManufacturerDate = 0; // initialized in setup function
 byte iAudibleAlarmCtrl = 2; // 1 - Disabled, 2 - Enabled, 3 - Muted
 
 
@@ -92,9 +91,7 @@ void setup() {
   PowerDevice.setFeature(HID_PD_CPCTYGRANULARITY1, &bCapacityGranularity1, sizeof(bCapacityGranularity1));
   PowerDevice.setFeature(HID_PD_CPCTYGRANULARITY2, &bCapacityGranularity2, sizeof(bCapacityGranularity2));
 
-  uint16_t year = 2024, month = 10, day = 12;
-  iManufacturerDate = (year - 1980)*512 + month*32 + day; // from 4.2.6 Battery Settings in "Universal Serial Bus Usage Tables for HID Power Devices"
-  PowerDevice.setFeature(HID_PD_MANUFACTUREDATE, &iManufacturerDate, sizeof(iManufacturerDate));
+  PowerDevice.sendManufacturerDate(2024, 10, 12);
 }
 
 void loop() {
