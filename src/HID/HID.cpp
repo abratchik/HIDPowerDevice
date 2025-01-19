@@ -21,12 +21,6 @@
 
 #if defined(USBCON)
 
-HID_& HID()
-{
-    static HID_ obj;
-    return obj;
-}
-
 int HID_::getInterface(uint8_t* interfaceCount)
 {
     *interfaceCount += 1; // uses 1
