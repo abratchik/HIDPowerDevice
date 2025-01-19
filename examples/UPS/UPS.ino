@@ -49,17 +49,12 @@ int iRes=0;
 
 
 void setup() {
-
-  Serial.begin(57600);
    
   for (int i = 0; i < BATTERY_COUNT; i++) {
     PowerDevice[i].begin();
   
     // Serial No is set in a special way as it forms Arduino port name
     PowerDevice[i].setSerial(STRING_SERIAL); 
-  
-    // Used for debugging purposes. 
-    PowerDevice[i].setOutput(Serial);
   }
   
   pinMode(CHGDCHPIN, INPUT_PULLUP); // ground this pin to simulate power failure. 
@@ -133,7 +128,6 @@ void loop() {
   // Shutdown requested
   if(iDelayBe4ShutDown > 0 ) {
       iPresentStatus.ShutdownRequested = 1;
-      Serial.println("shutdown requested");
   }
   else
     iPresentStatus.ShutdownRequested = 0;
@@ -142,7 +136,6 @@ void loop() {
   if((iPresentStatus.ShutdownRequested) || 
      (iPresentStatus.RemainingTimeLimitExpired)) {
     iPresentStatus.ShutdownImminent = 1;
-    Serial.println("shutdown imminent");
   }
   else
     iPresentStatus.ShutdownImminent = 0;
@@ -186,10 +179,5 @@ void loop() {
     iPrevRemaining = iRemaining[0];
     iPrevRunTimeToEmpty = iRunTimeToEmpty;
   }
-  
-
-  Serial.println(iRemaining);
-  Serial.println(iRunTimeToEmpty);
-  Serial.println(iRes);
   
 }
