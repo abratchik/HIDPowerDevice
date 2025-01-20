@@ -166,7 +166,7 @@ bool HID_::LockFeature(uint16_t id, bool lock) {
 }
 
 
-int HID_::SendReport(uint16_t id, const void* data, int len)
+int HID_::SendReport(uint8_t id, const void* data, int len)
 {
     auto ret = USB_Send(HID_TX, &id, 1);
     if (ret < 0) return ret;

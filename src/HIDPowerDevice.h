@@ -121,8 +121,8 @@ public:
   
   void end(void);
   
-  int sendDate(uint16_t id, uint16_t year, uint8_t month, uint8_t day);
-  int sendReport(uint16_t id, const void* bval, int len);
+  int sendDate(uint8_t id, uint16_t year, uint8_t month, uint8_t day);
+  int sendReport(uint8_t id, const void* bval, int len);
   
   int setFeature(uint16_t id, const void* data, int len);
   
